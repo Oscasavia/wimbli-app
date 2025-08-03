@@ -85,3 +85,6 @@ app.*.map.json
 # macOS build artifacts
 /macos/build/
 /macos/Flutter/ephemeral
+
+# Firebase (do not commit)
+lib/firebase_options.dart
