@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "589555125082",
+    "project_id": "wimbli-34755",
+    "storage_bucket": "wimbli-34755.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589555125082:android:1083e943ce6d0b802e0163",
+        "android_client_info": {
+          "package_name": "com.example.wimbli"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYoxjfqIF76W0QjqWM4a5gHo72gqxK5LA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589555125082:android:c1044a52638d4dd12e0163",
+        "android_client_info": {
+          "package_name": "com.oscasavia.wimbli"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYoxjfqIF76W0QjqWM4a5gHo72gqxK5LA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
