@@ -545,13 +545,23 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
                 value: 'edit',
-                child:
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, color: Colors.white),
+                    SizedBox(width: 10),
                     Text('Edit Event', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
               const PopupMenuItem<String>(
                 value: 'delete',
-                child:
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.red),
+                    SizedBox(width: 10),
                     Text('Delete Event', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
               ),
             ],
           ),
