@@ -763,19 +763,22 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.white.withOpacity(0.2),
-          backgroundImage: user.profilePicture != null
-              ? NetworkImage(user.profilePicture!)
-              : null,
-          child: user.profilePicture == null
-              ? Icon(
-                  Icons.person,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 24,
-                )
-              : null,
+        leading: Hero(
+          tag: 'profile_pic_${user.uid}',
+          child: CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundImage: user.profilePicture != null
+                ? NetworkImage(user.profilePicture!)
+                : null,
+            child: user.profilePicture == null
+                ? Icon(
+                    Icons.person,
+                    color: Colors.white.withOpacity(0.7),
+                    size: 24,
+                  )
+                : null,
+          ),
         ),
         title: Text(user.username,
             style: GoogleFonts.poppins(

@@ -834,20 +834,30 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
           ),
         ),
-        Opacity(
-          opacity: label != null ? 1.0 : 0.0,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 6.0),
-            child: Text(
-              label ?? '0',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: animation, child: child),
+            );
+          },
+          child: Opacity(
+            key: ValueKey<String?>(label),
+            opacity: label != null ? 1.0 : 0.0,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6.0),
+              child: Text(
+                label ?? '0',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
+        )
       ],
     );
   }

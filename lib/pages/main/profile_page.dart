@@ -986,26 +986,30 @@ class _ProfilePageState extends State<ProfilePage>
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (profilePictureUrl != null) {
-                          _showFullImage(profilePictureUrl);
-                        }
-                      },
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white24,
-                        backgroundImage: profilePictureUrl != null
-                            ? NetworkImage(profilePictureUrl)
-                            : null, // Set to null if no URL
-                        child: profilePictureUrl == null
-                            ? Icon(
-                                // Display Icon if no URL
-                                Icons.person,
-                                size: 50,
-                                color: Colors.white.withOpacity(0.7),
-                              )
-                            : null, // Display nothing here if there is an image
+                    Hero(
+                      tag:
+                          'profile_pic_${widget.userId ?? FirebaseAuth.instance.currentUser?.uid}',
+                      child: GestureDetector(
+                        onTap: () {
+                          if (profilePictureUrl != null) {
+                            _showFullImage(profilePictureUrl);
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.white24,
+                          backgroundImage: profilePictureUrl != null
+                              ? NetworkImage(profilePictureUrl)
+                              : null, // Set to null if no URL
+                          child: profilePictureUrl == null
+                              ? Icon(
+                                  // Display Icon if no URL
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.white.withOpacity(0.7),
+                                )
+                              : null, // Display nothing here if there is an image
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),

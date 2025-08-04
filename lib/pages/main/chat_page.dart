@@ -753,7 +753,45 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  // MODIFICATION: Group options logic
+  void _showLikedBy(List<String> userIds) async {
+    if (userIds.isEmpty) return;
+    // In a real app, you might want to show a loading indicator here
+    final usersSnapshot = await _firestore
+        .collection('users')
+        .where(FieldPath.documentId, whereIn: userIds)
+        .get();
+
+    final userNames = usersSnapshot.docs
+        .map((doc) => doc.data()['username'] ?? 'A user')
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        // ... styling for your bottom sheet ...
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${userNames.length} Likes',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: userNames.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text(userNames[index]),
+                  leading: Icon(Icons.person, color: Colors.white70),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Group options logic
   void _showGroupOptions() {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return;
@@ -1262,35 +1300,38 @@ class _ChatPageState extends State<ChatPage> {
                   // Layer 2: The positioned heart icon and counter
                   if (message.likedBy.isNotEmpty)
                     Positioned(
-                      bottom: -10,
-                      right: isSender ? 4 : null,
-                      left: isSender ? null : 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFF2A2A3D),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: Colors.black.withOpacity(0.2),
-                                width: 1)),
-                        child: Row(
-                          children: [
-                            Icon(Icons.favorite,
-                                color: Colors.red.shade400, size: 12),
-                            const SizedBox(width: 4),
-                            Text(
-                              message.likedBy.length.toString(),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        bottom: -10,
+                        right: isSender ? 4 : null,
+                        left: isSender ? null : 4,
+                        child: GestureDetector(
+                          // WRAP the counter in a GestureDetector
+                          onLongPress: () => _showLikedBy(message.likedBy),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                                color: const Color(0xFF2A2A3D),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.black.withOpacity(0.2),
+                                    width: 1)),
+                            child: Row(
+                              children: [
+                                Icon(Icons.favorite,
+                                    color: Colors.red.shade400, size: 12),
+                                const SizedBox(width: 4),
+                                Text(
+                                  message.likedBy.length.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
+                          ),
+                        )),
                 ],
               ),
             ],
