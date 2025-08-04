@@ -1134,7 +1134,6 @@ class _ChatPageState extends State<ChatPage> {
             isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // --- ADDED: Show CircleAvatar for the other user ---
           if (!isSender) ...[
             GestureDetector(
               onTap: () => _navigateToUserProfile(message.senderId),
@@ -1151,8 +1150,6 @@ class _ChatPageState extends State<ChatPage> {
             ),
             const SizedBox(width: 8),
           ],
-
-          // This column holds the sender's name and the message bubble
           Column(
             crossAxisAlignment:
                 isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -1168,105 +1165,133 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                 ),
-              GestureDetector(
-                onDoubleTap: () => _handleLikeMessage(message),
-                onLongPress: () => _showMessageOptions(message),
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width *
-                        0.7, // Adjusted max width
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: isSender
-                          ? const Radius.circular(16)
-                          : const Radius.circular(4),
-                      bottomRight: isSender
-                          ? const Radius.circular(4)
-                          : const Radius.circular(16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+              Stack(
+                clipBehavior: Clip.none, // Allow the counter to overflow
+                children: [
+                  // Layer 1: The message bubble
+                  GestureDetector(
+                    onDoubleTap: () => _handleLikeMessage(message),
+                    onLongPress: () => _showMessageOptions(message),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (message.replyToMessageText != null)
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          margin: const EdgeInsets.only(bottom: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border(
-                                left: BorderSide(
-                                    color: Colors.blue.shade300, width: 3)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message.replyToSenderName ?? 'Replied User',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade300,
-                                ),
-                              ),
-                              Text(
-                                message.replyToMessageText!,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: textColor.withOpacity(0.8),
-                                ),
-                              ),
-                            ],
-                          ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: bubbleColor,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(16),
+                          topRight: const Radius.circular(16),
+                          bottomLeft: isSender
+                              ? const Radius.circular(16)
+                              : const Radius.circular(4),
+                          bottomRight: isSender
+                              ? const Radius.circular(4)
+                              : const Radius.circular(16),
                         ),
-                      Text(
-                        message.text,
-                        style:
-                            GoogleFonts.poppins(color: textColor, fontSize: 15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 5),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (message.likedBy.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 6.0),
-                              child: Text(
-                                '❤️ ${message.likedBy.length}',
+                          if (message.replyToMessageText != null)
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              margin: const EdgeInsets.only(bottom: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border(
+                                    left: BorderSide(
+                                        color: Colors.blue.shade300, width: 3)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    message.replyToSenderName ?? 'Replied User',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade300,
+                                    ),
+                                  ),
+                                  Text(
+                                    message.replyToMessageText!,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: textColor.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          Text(
+                            message.text,
+                            style: GoogleFonts.poppins(
+                                color: textColor, fontSize: 15),
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // The like counter has been removed from here.
+                              Text(
+                                '${message.isEdited ? 'Edited ' : ''}${_formatTimestamp(message.timestamp)}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 10,
                                   color: timestampColor,
                                 ),
                               ),
-                            ),
-                          Text(
-                            '${message.isEdited ? 'Edited ' : ''}${_formatTimestamp(message.timestamp)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              color: timestampColor,
-                            ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // Layer 2: The positioned heart icon and counter
+                  if (message.likedBy.isNotEmpty)
+                    Positioned(
+                      bottom: -10,
+                      right: isSender ? 4 : null,
+                      left: isSender ? null : 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFF2A2A3D),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: Colors.black.withOpacity(0.2),
+                                width: 1)),
+                        child: Row(
+                          children: [
+                            Icon(Icons.favorite,
+                                color: Colors.red.shade400, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              message.likedBy.length.toString(),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
