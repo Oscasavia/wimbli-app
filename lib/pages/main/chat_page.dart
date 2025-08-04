@@ -753,41 +753,147 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _showLikedBy(List<String> userIds) async {
+  void _showLikedBy(List<String> userIds) {
     if (userIds.isEmpty) return;
-    // In a real app, you might want to show a loading indicator here
-    final usersSnapshot = await _firestore
+
+    // This Future fetches the detailed user data from Firestore.
+    final Future<List<Map<String, dynamic>>> usersFuture = _firestore
         .collection('users')
         .where(FieldPath.documentId, whereIn: userIds)
-        .get();
-
-    final userNames = usersSnapshot.docs
-        .map((doc) => doc.data()['username'] ?? 'A user')
-        .toList();
+        .get()
+        .then((snapshot) => snapshot.docs.map((doc) {
+              // We combine the document data with its ID for later use (e.g., navigation).
+              return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+            }).toList());
 
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        // ... styling for your bottom sheet ...
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${userNames.length} Likes',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: userNames.length,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text(userNames[index]),
-                  leading: Icon(Icons.person, color: Colors.white70),
+      backgroundColor: Colors.transparent, // Required for custom border radius.
+      isScrollControlled: true, // Allows the sheet to be dragged up.
+      builder: (context) {
+        // DraggableScrollableSheet provides a modern, resizable bottom sheet.
+        return DraggableScrollableSheet(
+          initialChildSize: 0.4, // Sheet starts at 40% of screen height.
+          minChildSize: 0.2, // Can be dragged down to 20%.
+          maxChildSize: 0.7, // Can be dragged up to 70%.
+          builder: (_, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A2A3D), // Matches the app's dark theme.
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+              child: Column(
+                children: [
+                  // A small visual handle for the draggable sheet.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade600,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // The requested "Liked by" title.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(
+                      'Liked by',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  // FutureBuilder handles the asynchronous loading of user data.
+                  Expanded(
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: usersFuture,
+                      builder: (context, snapshot) {
+                        // Display a loading spinner while fetching data.
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                                color: Colors.blueAccent),
+                          );
+                        }
+
+                        // Display an error message if the fetch fails.
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              'Could not load users.',
+                              style: GoogleFonts.poppins(color: Colors.white70),
+                            ),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              'This message has no likes.', // Fallback message.
+                              style: GoogleFonts.poppins(color: Colors.white70),
+                            ),
+                          );
+                        }
+
+                        // If data is ready, build the list of users.
+                        final users = snapshot.data!;
+
+                        return ListView.builder(
+                          controller:
+                              scrollController, // Link to the draggable controller.
+                          itemCount: users.length,
+                          itemBuilder: (context, index) {
+                            final user = users[index];
+                            final username =
+                                user['username'] ?? 'Anonymous User';
+                            final avatarUrl = user[
+                                'profilePicture']; // Assumes field is 'photoURL'.
+                            final userId = user['id'];
+
+                            return ListTile(
+                              // Displays the user's profile picture.
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.white24,
+                                backgroundImage: avatarUrl != null
+                                    ? NetworkImage(avatarUrl)
+                                    : null,
+                                child: avatarUrl == null
+                                    ? const Icon(Icons.person,
+                                        size: 20, color: Colors.white70)
+                                    : null,
+                              ),
+                              title: Text(
+                                username,
+                                style: GoogleFonts.poppins(color: Colors.white),
+                              ),
+                              // ADDITION: Makes each user tappable to view their profile.
+                              onTap: () {
+                                Navigator.pop(
+                                    context); // Close the bottom sheet.
+                                _navigateToUserProfile(
+                                    userId); // Navigate to the profile page.
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1304,8 +1410,7 @@ class _ChatPageState extends State<ChatPage> {
                         right: isSender ? 4 : null,
                         left: isSender ? null : 4,
                         child: GestureDetector(
-                          // WRAP the counter in a GestureDetector
-                          onLongPress: () => _showLikedBy(message.likedBy),
+                          onTap: () => _showLikedBy(message.likedBy),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
