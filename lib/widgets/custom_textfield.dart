@@ -11,6 +11,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLines;
+  final int? minLines;
 
   const CustomTextField({
     super.key,
@@ -23,18 +24,20 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.inputFormatters,
     this.maxLines = 1,
+    this.minLines = 1,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      autocorrect: false,        // turn off the red‑wavy “spell‑check” underlines
+      autocorrect: false, // turn off the red‑wavy “spell‑check” underlines
       enableSuggestions: true,
       controller: controller, // Use the controller
       obscureText: obscureText,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       maxLines: maxLines,
+      minLines: minLines,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hintText,
@@ -61,7 +64,7 @@ class CustomTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.white, width: 2),
+          borderSide: const BorderSide(color: Colors.white, width: 1),
         ),
       ),
     );

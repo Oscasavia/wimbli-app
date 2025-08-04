@@ -1044,7 +1044,7 @@ class _ChatPageState extends State<ChatPage> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                // border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
               child: TextField(
                 controller: _messageController,

@@ -386,7 +386,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
             hintText: "Description",
             icon: Icons.description,
             keyboardType: TextInputType.multiline, // Enables the 'Enter' key
-            maxLines: 2,
+            maxLines: 5,
+            minLines: 1,
           )),
       _buildStep(
           "Where is it happening?",

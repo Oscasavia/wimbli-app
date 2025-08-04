@@ -577,11 +577,9 @@ class _MessagesPageState extends State<MessagesPage>
           radius: 28,
           // Using a generic group icon as in TypeScript, or you can use a placeholder image
           backgroundColor: group.isUnread
-              ? Colors.blue.shade300.withOpacity(0.3)
+              ? Colors.blue.shade300.withOpacity(0.5)
               : Colors.white24,
-          child: Icon(Icons.group,
-              color: group.isUnread ? Colors.blue.shade300 : Colors.white70,
-              size: 30),
+          child: Icon(Icons.group, color: Colors.white70, size: 30),
           // If you want to use network images for avatars, you'd need a field in Group model
           // backgroundImage: NetworkImage(group.senderAvatarUrl),
         ),
