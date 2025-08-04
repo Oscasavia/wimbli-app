@@ -231,12 +231,12 @@ class _AppShellState extends State<AppShell> {
                               decoration: BoxDecoration(
                                 color: Colors.blue.shade400,
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
+                                // border:
+                                //     Border.all(color: Colors.white, width: 0.5),
                               ),
                               constraints: const BoxConstraints(
-                                minWidth: 10,
-                                minHeight: 10,
+                                minWidth: 8,
+                                minHeight: 8,
                               ),
                             ),
                           ),

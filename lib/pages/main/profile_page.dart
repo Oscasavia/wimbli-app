@@ -1041,11 +1041,14 @@ class _ProfilePageState extends State<ProfilePage>
                     const SizedBox(height: 24),
                     _buildStatsRow(interestedCount),
                     const SizedBox(height: 24),
-                    _buildInterestsSection(userInterests),
-                    const SizedBox(height: 24),
+                    // _buildInterestsSection(userInterests),
+                    // const SizedBox(height: 24),
                   ],
                 ),
               ),
+            ),
+            SliverToBoxAdapter(
+              child: _buildInterestsSection(userInterests),
             ),
             SliverPersistentHeader(
               delegate: _SliverAppBarDelegate(
@@ -1346,22 +1349,30 @@ class _ProfilePageState extends State<ProfilePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Interests',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
+        const Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: 24.0), // Padding for the title
+          child: Text('Interests',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
+        ),
         const SizedBox(height: 12),
         if (interests.isEmpty)
-          Text('No interests added yet.',
-              style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontStyle: FontStyle.italic))
+          const Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: 24.0), // Padding for the empty text
+            child: Text('No interests added yet.',
+                style: TextStyle(
+                    color: Colors.white70, fontStyle: FontStyle.italic)),
+          )
         else
           SizedBox(
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               itemCount: interests.length,
               itemBuilder: (context, index) {
                 return Padding(
@@ -1380,6 +1391,7 @@ class _ProfilePageState extends State<ProfilePage>
               },
             ),
           ),
+        const SizedBox(height: 24),
       ],
     );
   }
