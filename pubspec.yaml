@@ -1,7 +1,7 @@
 name: wimbli
 description: "Discover spontaneousevents events happening around you."
 publish_to: "none"
-version: 1.8.6+98
+version: 1.8.7+99
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
