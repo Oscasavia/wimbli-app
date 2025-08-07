@@ -177,7 +177,7 @@ class _AppShellState extends State<AppShell> {
           child: Container(
             height: 70,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.transparent,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
