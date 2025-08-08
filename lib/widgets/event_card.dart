@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wimbli/models/event_model.dart';
-import 'package:wimbli/constants/app_data.dart'; // <-- ADD THIS IMPORT
-import 'package:wimbli/models/app_category.dart';   // <-- ADD THIS IMPORT
+import 'package:wimbli/constants/app_data.dart';
+import 'package:wimbli/models/app_category.dart';
 
 // Helper to get an icon for a category
 IconData _getIconForCategory(String categoryName) {
@@ -64,73 +64,151 @@ class FeaturedEventCard extends StatelessWidget {
                 size: 100,
               ),
             ),
-          // The content overlay
+          
+          // Gradient overlay for text readability
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-                stops: const [0.5, 1.0],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.9)
+                ],
+                stops: const [0.4, 1.0],
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          
+          // Centered Title with its own background
+          // Center(
+          //   child: Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          //     margin: const EdgeInsets.symmetric(horizontal: 16),
+          //     decoration: BoxDecoration(
+          //       color: Colors.black.withOpacity(0.4),
+          //       borderRadius: BorderRadius.circular(15),
+          //     ),
+          //     child: Text(
+          //       event.title,
+          //       textAlign: TextAlign.center,
+          //       style: const TextStyle(
+          //         fontSize: 22,
+          //         fontWeight: FontWeight.bold,
+          //         color: Colors.white,
+          //         shadows: [Shadow(blurRadius: 4.0, color: Colors.black54)],
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          
+          // Bottom Info Section
+          Positioned(
+  bottom: 0,
+  left: 0,
+  right: 0,
+  child: Container(
+    padding: const EdgeInsets.all(12.0),
+    decoration: BoxDecoration(
+      color: Colors.black.withOpacity(0.4),
+      borderRadius: const BorderRadius.only(
+      bottomLeft: Radius.circular(15.0), // Adjust the value as needed
+      bottomRight: Radius.circular(15.0),
+      topLeft: Radius.circular(0.0),
+      topRight: Radius.circular(0.0),
+    ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          event.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.location_on, color: Colors.white70, size: 16),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                event.location,
+                style: const TextStyle(color: Colors.white70),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          DateFormat('MMM d, yyyy').format(event.date),
+          style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ),
+  ),
+),
+          
+          // Category Chip (Top Left)
+          Positioned(
+            top: 16,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
                 children: [
+                  Icon(_getIconForCategory(event.category), color: Colors.white, size: 14),
+                  const SizedBox(width: 6),
                   Text(
-                    event.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [Shadow(blurRadius: 10.0, color: Colors.black)],
-                    ),
+                    event.category, 
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white70, size: 16),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          event.location,
-                          style: const TextStyle(color: Colors.white70),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('MMM d, yyyy').format(event.date),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                      ),
-                      GestureDetector(
-                        onTap: onToggleSave,
-                        child: Row(
-                          children: [
-                            Icon(
-                              event.isInterested ? Icons.star : Icons.star_border,
-                              color: event.isInterested ? Colors.yellow.shade600 : Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              event.interestedCount.toString(),
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  )
                 ],
+              ),
+            ),
+          ),
+
+          // Star Icon & Counter (Top Right)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: GestureDetector(
+              onTap: onToggleSave,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      event.isInterested ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: event.isInterested ? Colors.yellow.shade600 : Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      event.interestedCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
