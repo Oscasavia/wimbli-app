@@ -521,7 +521,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withOpacity(0.2),
                           width: 0,
                         ),
                       ),

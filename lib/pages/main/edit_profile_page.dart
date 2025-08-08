@@ -326,8 +326,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
                 color:
-                    isSelected ? Colors.white : Colors.white.withOpacity(0.4),
-                width: 1.5,
+                    isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+                width: 0,
               ),
             ),
             checkmarkColor: Colors.purple.shade700,
