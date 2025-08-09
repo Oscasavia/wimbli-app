@@ -230,6 +230,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _updateEventEverywhere(Event updatedEvent) {
+    final index = _allEvents.indexWhere((e) => e.id == updatedEvent.id);
+    if (index != -1) {
+      _allEvents[index] = updatedEvent;
+    }
+  }
+
   void _setupDataStreams(String categoryFilter) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -355,63 +362,58 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _toggleSave(Event event) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // Optionally, show a message that user must be logged in
-      return;
-    }
+    if (user == null) return;
 
-    // --- START: OPTIMISTIC UPDATE ---
-    // Store the original state in case we need to revert on failure.
-    final originalInterestedState = event.isInterested;
+    final wasSaved = _savedPostIds.contains(event.id);
     final originalInterestedCount = event.interestedCount;
+    final delta = wasSaved ? -1 : 1;
 
-    // Immediately update the UI with the expected new state.
+    // 1. Optimistic local update
     setState(() {
-      event.isInterested = !originalInterestedState;
-      if (event.isInterested) {
-        event.interestedCount++;
+      event.isInterested = !wasSaved;
+      // Use clamp to ensure count never goes below 0
+      event.interestedCount = (event.interestedCount + delta).clamp(0, 999999);
+      if (wasSaved) {
+        _savedPostIds.remove(event.id);
       } else {
-        // Ensure the count doesn't go below zero.
-        event.interestedCount =
-            (event.interestedCount > 0) ? event.interestedCount - 1 : 0;
+        _savedPostIds.add(event.id);
       }
+      // Update the master list so all derived lists get the change
+      _updateEventEverywhere(event);
     });
-    // --- END: OPTIMISTIC UPDATE ---
 
-    // Now, perform the background update to Firestore.
+    // 2. Background Firestore update
     try {
       final batch = FirebaseFirestore.instance.batch();
-      final userDocRef =
+      final userRef =
           FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final postDocRef =
+      final postRef =
           FirebaseFirestore.instance.collection('posts').doc(event.id);
 
-      // The action is based on the new, toggled state.
-      if (event.isInterested) {
-        batch.update(userDocRef, {
-          'savedPosts': FieldValue.arrayUnion([event.id])
-        });
-        batch.update(postDocRef, {'interestedCount': FieldValue.increment(1)});
-      } else {
-        batch.update(userDocRef, {
-          'savedPosts': FieldValue.arrayRemove([event.id])
-        });
-        batch.update(postDocRef, {'interestedCount': FieldValue.increment(-1)});
-      }
+      batch.update(userRef, {
+        'savedPosts': wasSaved
+            ? FieldValue.arrayRemove([event.id])
+            : FieldValue.arrayUnion([event.id]),
+      });
+
+      batch.update(postRef, {
+        'interestedCount': FieldValue.increment(delta),
+      });
 
       await batch.commit();
     } catch (e) {
-      // If the database update fails, revert the UI to the original state.
-      if (mounted) {
-        setState(() {
-          event.isInterested = originalInterestedState;
-          event.interestedCount = originalInterestedCount;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Could not update status. Please try again.')),
-        );
-      }
+      // 3. Roll back local state on failure
+      setState(() {
+        event.isInterested = wasSaved;
+        event.interestedCount =
+            originalInterestedCount; // Revert to original count
+        if (wasSaved) {
+          _savedPostIds.add(event.id);
+        } else {
+          _savedPostIds.remove(event.id);
+        }
+        _updateEventEverywhere(event);
+      });
     }
   }
 
@@ -793,6 +795,7 @@ class _HomePageState extends State<HomePage> {
                                 child: GestureDetector(
                                   onTap: () => _navigateToEventDetails(event),
                                   child: FeaturedEventCard(
+                                    key: ValueKey(event.id),
                                     event: event,
                                     onToggleSave: () => _toggleSave(event),
                                   ),
@@ -824,6 +827,7 @@ class _HomePageState extends State<HomePage> {
                                 child: GestureDetector(
                                   onTap: () => _navigateToEventDetails(event),
                                   child: ForYouEventCard(
+                                      key: ValueKey(event.id),
                                       event: event,
                                       onToggleSave: () => _toggleSave(event)),
                                 ),
