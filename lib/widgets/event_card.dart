@@ -177,8 +177,8 @@ class FeaturedEventCard extends StatelessWidget {
                   children: [
                     Icon(
                       event.isInterested
-                          ? Icons.star_rounded
-                          : Icons.star_outline_rounded,
+                          ? Icons.star
+                          : Icons.star_border_outlined,
                       color: event.isInterested
                           ? Colors.yellow.shade600
                           : Colors.white,
@@ -294,7 +294,9 @@ class ForYouEventCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    event.isInterested ? Icons.star : Icons.star_border,
+                    event.isInterested
+                        ? Icons.star
+                        : Icons.star_border_outlined,
                     color: event.isInterested
                         ? Colors.yellow.shade600
                         : Colors.white,
