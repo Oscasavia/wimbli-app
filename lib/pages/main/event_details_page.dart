@@ -739,7 +739,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               const Divider(color: Colors.white30),
               const SizedBox(height: 20),
               _buildCalendarButton(),
-              const SizedBox(height: 10), // Add spacing between buttons
+              const SizedBox(height: 10),
               _buildJoinChatButton(), // New Join Chat Button
             ],
           ),

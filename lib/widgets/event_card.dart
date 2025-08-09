@@ -9,7 +9,8 @@ IconData _getIconForCategory(String categoryName) {
   // Find the category in the appCategories list, or use a default icon if not found.
   final category = appCategories.firstWhere(
     (c) => c.name == categoryName,
-    orElse: () => const AppCategory(name: 'Default', icon: Icons.event, color: Colors.grey),
+    orElse: () => const AppCategory(
+        name: 'Default', icon: Icons.event, color: Colors.grey),
   );
   return category.icon;
 }
@@ -64,98 +65,76 @@ class FeaturedEventCard extends StatelessWidget {
                 size: 100,
               ),
             ),
-          
+
           // Gradient overlay for text readability
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.9)
-                ],
+                colors: [Colors.transparent, Colors.black.withOpacity(0.9)],
                 stops: const [0.4, 1.0],
               ),
             ),
           ),
-          
-          // Centered Title with its own background
-          // Center(
-          //   child: Container(
-          //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          //     margin: const EdgeInsets.symmetric(horizontal: 16),
-          //     decoration: BoxDecoration(
-          //       color: Colors.black.withOpacity(0.4),
-          //       borderRadius: BorderRadius.circular(15),
-          //     ),
-          //     child: Text(
-          //       event.title,
-          //       textAlign: TextAlign.center,
-          //       style: const TextStyle(
-          //         fontSize: 22,
-          //         fontWeight: FontWeight.bold,
-          //         color: Colors.white,
-          //         shadows: [Shadow(blurRadius: 4.0, color: Colors.black54)],
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          
+
           // Bottom Info Section
           Positioned(
-  bottom: 0,
-  left: 0,
-  right: 0,
-  child: Container(
-    padding: const EdgeInsets.all(12.0),
-    decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.4),
-      borderRadius: const BorderRadius.only(
-      bottomLeft: Radius.circular(15.0), // Adjust the value as needed
-      bottomRight: Radius.circular(15.0),
-      topLeft: Radius.circular(0.0),
-      topRight: Radius.circular(0.0),
-    ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          event.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.location_on, color: Colors.white70, size: 16),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                event.location,
-                style: const TextStyle(color: Colors.white70),
-                overflow: TextOverflow.ellipsis,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft:
+                      Radius.circular(15.0), // Adjust the value as needed
+                  bottomRight: Radius.circular(15.0),
+                  topLeft: Radius.circular(0.0),
+                  topRight: Radius.circular(0.0),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    event.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on,
+                          color: Colors.white70, size: 16),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: const TextStyle(color: Colors.white70),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('MMM d, yyyy').format(event.date),
+                    style: const TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          DateFormat('MMM d, yyyy').format(event.date),
-          style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
-        ),
-      ],
-    ),
-  ),
-),
-          
+          ),
+
           // Category Chip (Top Left)
           Positioned(
             top: 16,
@@ -168,12 +147,14 @@ class FeaturedEventCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(_getIconForCategory(event.category), color: Colors.white, size: 14),
+                  Icon(_getIconForCategory(event.category),
+                      color: Colors.white, size: 14),
                   const SizedBox(width: 6),
-                  Text(
-                    event.category, 
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)
-                  ),
+                  Text(event.category,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12)),
                 ],
               ),
             ),
@@ -186,7 +167,8 @@ class FeaturedEventCard extends StatelessWidget {
             child: GestureDetector(
               onTap: onToggleSave,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(20),
@@ -194,8 +176,12 @@ class FeaturedEventCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      event.isInterested ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: event.isInterested ? Colors.yellow.shade600 : Colors.white,
+                      event.isInterested
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      color: event.isInterested
+                          ? Colors.yellow.shade600
+                          : Colors.white,
                       size: 20,
                     ),
                     const SizedBox(width: 6),
@@ -278,7 +264,8 @@ class ForYouEventCard extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -287,10 +274,14 @@ class ForYouEventCard extends StatelessWidget {
                     event.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                   _buildInfoRow(Icons.location_on, event.location),
-                  _buildInfoRow(Icons.access_time, DateFormat('MMM d, h:mm a').format(event.date)),
+                  _buildInfoRow(Icons.access_time,
+                      DateFormat('MMM d, h:mm a').format(event.date)),
                 ],
               ),
             ),
@@ -304,13 +295,16 @@ class ForYouEventCard extends StatelessWidget {
                 children: [
                   Icon(
                     event.isInterested ? Icons.star : Icons.star_border,
-                    color: event.isInterested ? Colors.yellow.shade600 : Colors.white,
+                    color: event.isInterested
+                        ? Colors.yellow.shade600
+                        : Colors.white,
                     size: 24,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     event.interestedCount.toString(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   )
                 ],
               ),
@@ -329,7 +323,8 @@ class ForYouEventCard extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12),
+            style:
+                TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12),
             overflow: TextOverflow.ellipsis,
           ),
         ),

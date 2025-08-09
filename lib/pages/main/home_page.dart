@@ -360,9 +360,25 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Determine the action based on the current state
-    final bool isSaving = !event.isInterested;
+    // --- START: OPTIMISTIC UPDATE ---
+    // Store the original state in case we need to revert on failure.
+    final originalInterestedState = event.isInterested;
+    final originalInterestedCount = event.interestedCount;
 
+    // Immediately update the UI with the expected new state.
+    setState(() {
+      event.isInterested = !originalInterestedState;
+      if (event.isInterested) {
+        event.interestedCount++;
+      } else {
+        // Ensure the count doesn't go below zero.
+        event.interestedCount =
+            (event.interestedCount > 0) ? event.interestedCount - 1 : 0;
+      }
+    });
+    // --- END: OPTIMISTIC UPDATE ---
+
+    // Now, perform the background update to Firestore.
     try {
       final batch = FirebaseFirestore.instance.batch();
       final userDocRef =
@@ -370,8 +386,8 @@ class _HomePageState extends State<HomePage> {
       final postDocRef =
           FirebaseFirestore.instance.collection('posts').doc(event.id);
 
-      // Perform the database update based on the action
-      if (isSaving) {
+      // The action is based on the new, toggled state.
+      if (event.isInterested) {
         batch.update(userDocRef, {
           'savedPosts': FieldValue.arrayUnion([event.id])
         });
@@ -383,11 +399,14 @@ class _HomePageState extends State<HomePage> {
         batch.update(postDocRef, {'interestedCount': FieldValue.increment(-1)});
       }
 
-      // Commit the changes to the database
       await batch.commit();
     } catch (e) {
-      // Handle potential errors, e.g., show a SnackBar
+      // If the database update fails, revert the UI to the original state.
       if (mounted) {
+        setState(() {
+          event.isInterested = originalInterestedState;
+          event.interestedCount = originalInterestedCount;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Could not update status. Please try again.')),
@@ -850,7 +869,6 @@ class __FilterDrawerState extends State<_FilterDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    // NEW: Calculate miles and kilometers for display
     final int miles = _tempFilters['distance'].toInt();
     final int km = (miles * 1.60934).toInt();
     final String distanceLabel = '$miles mi / $km km';
