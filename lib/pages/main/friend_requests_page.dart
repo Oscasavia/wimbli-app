@@ -123,14 +123,14 @@ class _FriendRequestsPageState extends State<FriendRequestsPage>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Friend request accepted.'),
           backgroundColor: Colors.green,
         ));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to accept request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -143,14 +143,14 @@ class _FriendRequestsPageState extends State<FriendRequestsPage>
       // Delete the friend request document
       await _firestore.collection('friendRequests').doc(requestId).delete();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Friend request declined.'),
           backgroundColor: Colors.orange,
         ));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to decline request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -163,14 +163,14 @@ class _FriendRequestsPageState extends State<FriendRequestsPage>
       // Delete the friend request document
       await _firestore.collection('friendRequests').doc(requestId).delete();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Friend request cancelled.'),
           backgroundColor: Colors.orange,
         ));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to cancel request. Please try again.'),
           backgroundColor: Colors.red,
         ));

@@ -465,7 +465,7 @@ class _ProfilePageState extends State<ProfilePage>
         setState(() {
           _mutualFriends = mutualsSnapshot.docs
               .map((doc) =>
-                  {'uid': doc.id, ...doc.data() as Map<String, dynamic>})
+                  {'uid': doc.id, ...doc.data()})
               .toList();
         });
       }
@@ -485,7 +485,7 @@ class _ProfilePageState extends State<ProfilePage>
         setState(() {
           _profileUserFriends = othersSnapshot.docs
               .map((doc) =>
-                  {'uid': doc.id, ...doc.data() as Map<String, dynamic>})
+                  {'uid': doc.id, ...doc.data()})
               .toList();
         });
       }
@@ -524,7 +524,7 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to send friend request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -581,7 +581,7 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to accept friend request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -621,7 +621,7 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to decline friend request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -660,7 +660,7 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to cancel friend request. Please try again.'),
           backgroundColor: Colors.red,
         ));
@@ -743,7 +743,7 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to remove friend. Please try again.'),
           backgroundColor: Colors.red,
         ));

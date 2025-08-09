@@ -763,7 +763,7 @@ class _ChatPageState extends State<ChatPage> {
         .get()
         .then((snapshot) => snapshot.docs.map((doc) {
               // We combine the document data with its ID for later use (e.g., navigation).
-              return {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+              return {'id': doc.id, ...doc.data()};
             }).toList());
 
     showModalBottomSheet(
@@ -778,9 +778,9 @@ class _ChatPageState extends State<ChatPage> {
           maxChildSize: 0.7, // Can be dragged up to 70%.
           builder: (_, scrollController) {
             return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A3D), // Matches the app's dark theme.
-                borderRadius: const BorderRadius.only(
+              decoration: const BoxDecoration(
+                color: Color(0xFF2A2A3D), // Matches the app's dark theme.
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
@@ -1175,7 +1175,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildInputArea(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         bottom: 8.0,
         left: 8.0,
         right: 8.0,
@@ -1268,7 +1268,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildMessageBubble(Message message, bool isSender) {
     final bubbleColor =
         isSender ? Colors.purple.shade400 : Colors.grey.shade700;
-    final textColor = Colors.white;
+    const textColor = Colors.white;
     final timestampColor = Colors.white.withOpacity(0.7);
 
     return Padding(

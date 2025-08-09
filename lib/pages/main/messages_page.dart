@@ -579,7 +579,7 @@ class _MessagesPageState extends State<MessagesPage>
           backgroundColor: group.isUnread
               ? Colors.blue.shade300.withOpacity(0.5)
               : Colors.white24,
-          child: Icon(Icons.group, color: Colors.white70, size: 30),
+          child: const Icon(Icons.group, color: Colors.white70, size: 30),
           // If you want to use network images for avatars, you'd need a field in Group model
           // backgroundImage: NetworkImage(group.senderAvatarUrl),
         ),

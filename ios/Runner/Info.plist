@@ -32,10 +32,22 @@
 	<true/>
 	<key>NSCalendarsUsageDescription</key>
 	<string>This app requires access to the calendar to add events.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Wimbli uses the camera to take photos for events.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>This app requires access to your contacts to associate events.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Wimbli uses your location to show nearby events.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Wimbli saves images to your photo library when you choose to.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Wimbli needs access to your photos to select images for events.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
