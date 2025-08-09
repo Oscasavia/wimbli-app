@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:wimbli/models/event_model.dart';
 import 'package:wimbli/constants/app_data.dart';
 import 'package:wimbli/models/app_category.dart';
-import 'package:wimbli/widgets/interest_button.dart';
 
 // Helper to get an icon for a category
 IconData _getIconForCategory(String categoryName) {
@@ -18,12 +17,10 @@ IconData _getIconForCategory(String categoryName) {
 
 class FeaturedEventCard extends StatelessWidget {
   final Event event;
-  final VoidCallback onToggleSave;
 
   const FeaturedEventCard({
     super.key,
     required this.event,
-    required this.onToggleSave,
   });
 
   @override
@@ -160,30 +157,6 @@ class FeaturedEventCard extends StatelessWidget {
               ),
             ),
           ),
-
-          // Star Icon & Counter (Top Right)
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Column(
-              children: [
-                InterestButton(
-                  interested: event.isInterested,
-                  onPressed: onToggleSave,
-                  size: 20,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  event.interestedCount.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -192,106 +165,143 @@ class FeaturedEventCard extends StatelessWidget {
 
 class ForYouEventCard extends StatelessWidget {
   final Event event;
-  final VoidCallback onToggleSave;
 
-  const ForYouEventCard({
-    super.key,
-    required this.event,
-    required this.onToggleSave,
-  });
+  const ForYouEventCard({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
-    bool hasImage = event.imageUrl.isNotEmpty;
+    final hasImage = event.imageUrl.isNotEmpty;
+    const cardHeight = 300.0;
 
     return Container(
-      height: 120,
+      width: double.infinity,
+      height: cardHeight,
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25),
         borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-              ),
-              gradient: !hasImage
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.purple.shade400,
-                        Colors.blue.shade400,
-                      ],
-                    )
-                  : null,
-              image: hasImage
-                  ? DecorationImage(
-                      image: NetworkImage(event.imageUrl),
-                      fit: BoxFit.cover,
-                      onError: (exception, stackTrace) {},
-                    )
-                  : null,
-            ),
-            child: !hasImage
-                ? Center(
-                    child: Icon(
-                      _getIconForCategory(event.category),
-                      color: Colors.white.withOpacity(0.5),
-                      size: 50,
-                    ),
-                  )
-                : null,
+        color: Colors.white.withOpacity(0.1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
-          Expanded(
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text(
-                    event.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                  _buildInfoRow(Icons.location_on, event.location),
-                  _buildInfoRow(Icons.access_time,
-                      DateFormat('MMM d, h:mm a').format(event.date)),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InterestButton(
-                  interested: event.isInterested,
-                  onPressed: onToggleSave,
-                  size: 24,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  event.interestedCount.toString(),
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          )
         ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Tune these two numbers:
+          const infoMinHeight = 96.0; // enough space for 3 compact rows
+          const infoMaxHeight = 124.0; // avoid “too tall / airy” look
+
+          final total = constraints.maxHeight;
+          final imageHeight =
+              (total - infoMinHeight).clamp(140.0, total - 72.0);
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // IMAGE SECTION (takes remaining space automatically)
+              SizedBox(
+                height: imageHeight,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: hasImage
+                          ? Image.network(
+                              event.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stack) =>
+                                  _fallbackGradient(),
+                            )
+                          : _fallbackGradient(),
+                    ),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Text(
+                          event.category,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // INFO SECTION (no Expanded, bounded height)
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: infoMinHeight,
+                  maxHeight: infoMaxHeight,
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    // START (not center) avoids the “too much vertical padding” look
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        event.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildInfoRow(Icons.location_on, event.location),
+                      const SizedBox(height: 4),
+                      _buildInfoRow(
+                        Icons.access_time,
+                        DateFormat('MMM d, h:mm a').format(event.date),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _fallbackGradient() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.purple.shade400,
+            Colors.blue.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          _getIconForCategory(event.category),
+          color: Colors.white.withOpacity(0.5),
+          size: 60,
+        ),
       ),
     );
   }
@@ -304,12 +314,27 @@ class ForYouEventCard extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style:
-                TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
+  }
+
+  IconData _getIconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'sports':
+        return Icons.sports_soccer;
+      case 'music':
+        return Icons.music_note;
+      case 'games':
+        return Icons.videogame_asset;
+      default:
+        return Icons.event;
+    }
   }
 }

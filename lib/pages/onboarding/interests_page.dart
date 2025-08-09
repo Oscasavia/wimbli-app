@@ -29,9 +29,13 @@ class _InterestsPageState extends State<InterestsPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
         if (userDoc.exists && userDoc.data()!.containsKey('interests')) {
-          final interestsFromServer = List<String>.from(userDoc.data()!['interests']);
+          final interestsFromServer =
+              List<String>.from(userDoc.data()!['interests']);
           setState(() {
             _selectedInterests.addAll(interestsFromServer);
           });
@@ -88,7 +92,6 @@ class _InterestsPageState extends State<InterestsPage> {
       }, SetOptions(merge: true));
 
       // Your AuthGate will automatically handle the navigation from here.
-
     } catch (e) {
       _showErrorSnackBar('An error occurred. Please try again.');
     } finally {
@@ -120,7 +123,8 @@ class _InterestsPageState extends State<InterestsPage> {
         ),
         child: SafeArea(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white))
               : Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
@@ -155,8 +159,8 @@ class _InterestsPageState extends State<InterestsPage> {
                                 return FilterChip(
                                     label: Text(interest),
                                     selected: isSelected,
-                                    onSelected: (bool selected) =>
-                                        setState(() => selected
+                                    onSelected: (bool selected) => setState(
+                                        () => selected
                                             ? _selectedInterests.add(interest)
                                             : _selectedInterests
                                                 .remove(interest)),
@@ -169,33 +173,35 @@ class _InterestsPageState extends State<InterestsPage> {
                                             : Colors.white,
                                         fontWeight: FontWeight.bold),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(20),
                                         side: BorderSide(
                                             color: isSelected
                                                 ? Colors.white
-                                                : Colors.white
-                                                    .withOpacity(0.4),
+                                                : Colors.white.withOpacity(0.4),
                                             width: 2)),
-                                    checkmarkColor: Colors.purple.shade700);
+                                    checkmarkColor: Colors.purple.shade300);
                               }).toList()),
                           const SizedBox(height: 48),
                           ElevatedButton(
-                              onPressed: (_isSaving || _selectedInterests.isEmpty) ? null : _saveInterests,
+                              onPressed:
+                                  (_isSaving || _selectedInterests.isEmpty)
+                                      ? null
+                                      : _saveInterests,
                               style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.purple.shade700,
                                   backgroundColor: Colors.white,
-                                  disabledBackgroundColor: Colors.white.withOpacity(0.5),
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 16),
+                                  disabledBackgroundColor:
+                                      Colors.white.withOpacity(0.5),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(30))),
+                                      borderRadius: BorderRadius.circular(30))),
                               child: _isSaving
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.purple),
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.purple),
                                     )
                                   : const Text('CONTINUE',
                                       style: TextStyle(

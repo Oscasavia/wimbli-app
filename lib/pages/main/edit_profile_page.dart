@@ -330,7 +330,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 width: 0,
               ),
             ),
-            checkmarkColor: Colors.purple.shade700,
+            checkmarkColor: Colors.purple.shade300,
           );
         }).toList(),
       ),

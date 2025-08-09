@@ -360,63 +360,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _toggleSave(Event event) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final wasSaved = _savedPostIds.contains(event.id);
-    final originalInterestedCount = event.interestedCount;
-    final delta = wasSaved ? -1 : 1;
-
-    // 1. Optimistic local update
-    setState(() {
-      event.isInterested = !wasSaved;
-      // Use clamp to ensure count never goes below 0
-      event.interestedCount = (event.interestedCount + delta).clamp(0, 999999);
-      if (wasSaved) {
-        _savedPostIds.remove(event.id);
-      } else {
-        _savedPostIds.add(event.id);
-      }
-      // Update the master list so all derived lists get the change
-      _updateEventEverywhere(event);
-    });
-
-    // 2. Background Firestore update
-    try {
-      final batch = FirebaseFirestore.instance.batch();
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final postRef =
-          FirebaseFirestore.instance.collection('posts').doc(event.id);
-
-      batch.update(userRef, {
-        'savedPosts': wasSaved
-            ? FieldValue.arrayRemove([event.id])
-            : FieldValue.arrayUnion([event.id]),
-      });
-
-      batch.update(postRef, {
-        'interestedCount': FieldValue.increment(delta),
-      });
-
-      await batch.commit();
-    } catch (e) {
-      // 3. Roll back local state on failure
-      setState(() {
-        event.isInterested = wasSaved;
-        event.interestedCount =
-            originalInterestedCount; // Revert to original count
-        if (wasSaved) {
-          _savedPostIds.add(event.id);
-        } else {
-          _savedPostIds.remove(event.id);
-        }
-        _updateEventEverywhere(event);
-      });
-    }
-  }
-
   void _navigateToEventDetails(Event event) {
     Navigator.push(
       context,
@@ -644,6 +587,7 @@ class _HomePageState extends State<HomePage> {
               },
               backgroundColor: Colors.white.withOpacity(0.2),
               selectedColor: Colors.white,
+              checkmarkColor: Colors.purple.shade300,
               labelStyle: TextStyle(
                 color: isSelected ? Colors.purple.shade700 : Colors.white,
                 fontWeight: FontWeight.bold,
@@ -797,7 +741,6 @@ class _HomePageState extends State<HomePage> {
                                   child: FeaturedEventCard(
                                     key: ValueKey(event.id),
                                     event: event,
-                                    onToggleSave: () => _toggleSave(event),
                                   ),
                                 ),
                               );
@@ -808,7 +751,7 @@ class _HomePageState extends State<HomePage> {
                       if (forYouEvents.isNotEmpty)
                         const SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(16, 14, 16, 16),
+                            padding: EdgeInsets.fromLTRB(16, 18, 16, 4),
                             child: Text('For You',
                                 style: TextStyle(
                                     fontSize: 22,
@@ -827,9 +770,9 @@ class _HomePageState extends State<HomePage> {
                                 child: GestureDetector(
                                   onTap: () => _navigateToEventDetails(event),
                                   child: ForYouEventCard(
-                                      key: ValueKey(event.id),
-                                      event: event,
-                                      onToggleSave: () => _toggleSave(event)),
+                                    key: ValueKey(event.id),
+                                    event: event,
+                                  ),
                                 ),
                               );
                             },
