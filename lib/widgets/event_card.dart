@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:wimbli/models/event_model.dart';
 import 'package:wimbli/constants/app_data.dart';
 import 'package:wimbli/models/app_category.dart';
+import 'package:wimbli/widgets/interest_button.dart';
 
 // Helper to get an icon for a category
 IconData _getIconForCategory(String categoryName) {
@@ -164,38 +165,23 @@ class FeaturedEventCard extends StatelessWidget {
           Positioned(
             top: 16,
             right: 16,
-            child: GestureDetector(
-              onTap: onToggleSave,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(20),
+            child: Column(
+              children: [
+                InterestButton(
+                  interested: event.isInterested,
+                  onPressed: onToggleSave,
+                  size: 20,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      event.isInterested
-                          ? Icons.star
-                          : Icons.star_border_outlined,
-                      color: event.isInterested
-                          ? Colors.yellow.shade600
-                          : Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      event.interestedCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  event.interestedCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -288,28 +274,21 @@ class ForYouEventCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: onToggleSave,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    event.isInterested
-                        ? Icons.star
-                        : Icons.star_border_outlined,
-                    color: event.isInterested
-                        ? Colors.yellow.shade600
-                        : Colors.white,
-                    size: 24,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    event.interestedCount.toString(),
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  )
-                ],
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                InterestButton(
+                  interested: event.isInterested,
+                  onPressed: onToggleSave,
+                  size: 24,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  event.interestedCount.toString(),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
           )
         ],

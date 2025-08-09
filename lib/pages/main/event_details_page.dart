@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wimbli/pages/main/profile_page.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:device_calendar/device_calendar.dart' as device_calendar;
+import 'package:wimbli/widgets/interest_button.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:wimbli/pages/main/chat_page.dart'; // Import the ChatPage
@@ -816,48 +817,55 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   Widget _buildActionIcon(IconData icon, {String? label}) {
-    final iconColor =
-        icon == Icons.star ? Colors.yellow.shade600 : Colors.white;
-    return Column(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
+    // Use the new reusable button only for the star icon
+    if (icon == Icons.star || icon == Icons.star_border_outlined) {
+      return Column(
+        children: [
+          InterestButton(
+            interested: _currentEvent.isInterested,
+            onPressed: _toggleSave,
+            size: 24,
+            padding: const EdgeInsets.all(10),
           ),
-        ),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(scale: animation, child: child),
-            );
-          },
-          child: Opacity(
-            key: ValueKey<String?>(label),
-            opacity: label != null ? 1.0 : 0.0,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 6.0),
-              child: Text(
-                label ?? '0',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: animation, child: child),
+              );
+            },
+            child: Opacity(
+              key: ValueKey<String?>(label),
+              opacity: label != null ? 1.0 : 0.0,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Text(
+                  label ?? '0',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
+          )
+        ],
+      );
+    }
+
+    // Keep the original logic for other icons like 'share'
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            shape: BoxShape.circle,
           ),
-        )
+          child: Icon(icon, color: Colors.white, size: 24),
+        ),
       ],
     );
   }
