@@ -621,6 +621,7 @@ class _HomePageState extends State<HomePage> {
               onRefresh: _handleRefresh,
               color: Colors.white,
               backgroundColor: Colors.purple.shade400,
+              displacement: 100.0,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => FocusScope.of(context).unfocus(),
