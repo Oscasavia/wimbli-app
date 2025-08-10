@@ -65,7 +65,11 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     // Ensure status bar icons are white on the splash screen
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: const SystemUiOverlayStyle(
+      // Bottom navigation bar
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
