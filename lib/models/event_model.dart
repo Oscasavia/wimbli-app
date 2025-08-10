@@ -13,6 +13,7 @@ class Event {
   final String? creatorProfilePic;
   final double fee;
   final String duration;
+  final String ageRestriction;
   final GeoPoint? coordinates;
   final bool isPrivate;
   int interestedCount;
@@ -33,6 +34,7 @@ class Event {
     this.creatorProfilePic,
     required this.fee,
     required this.duration,
+    required this.ageRestriction,
     this.coordinates,
     required this.isPrivate,
     this.interestedCount = 0,
@@ -57,6 +59,7 @@ class Event {
       creatorProfilePic: data['creatorProfilePic'], // Can be null
       fee: (data['fee'] ?? 0.0).toDouble(),
       duration: data['duration'] ?? '',
+      ageRestriction: data['ageRestriction'] ?? 'All Ages',
       coordinates: data['coordinates'] as GeoPoint?, // Correctly read coordinates
       isPrivate: data['isPrivate'] ?? false, // Correctly read isPrivate
       interestedCount: data['interestedCount'] ?? 0,

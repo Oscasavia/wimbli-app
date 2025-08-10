@@ -57,6 +57,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final _durationController = TextEditingController();
   String _durationUnit = 'minutes';
 
+  String? _ageRestriction = 'All Ages';
+  final List<String> _ageOptions = ['All Ages', '18+', '21+'];
+
   final _searchController = TextEditingController();
   Timer? _debounce;
   List<AppUser> _searchResults = [];
@@ -319,6 +322,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         'imageUrl': imageUrl,
         'isPrivate': widget.isPrivate,
         'invitedUsers': widget.isPrivate ? invitedUserIds : [],
+        'ageRestriction': _ageRestriction,
       };
 
       if (widget.eventToEdit != null) {
@@ -400,6 +404,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
           )),
       _buildStep("Choose a category", "This helps others find your event.",
           _buildCategorySelector()),
+      _buildStep("Is there an age restriction?",
+          "Select the appropriate age group.", _buildAgeRestrictionSelector()),
       _buildStep(
           "Is there an entry fee?",
           "(Optional)",
@@ -484,6 +490,37 @@ class _CreateEventPageState extends State<CreateEventPage> {
           ),
           const SizedBox(width: 48),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAgeRestrictionSelector() {
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _ageRestriction,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+          dropdownColor: Colors.purple.shade400,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          items: _ageOptions.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _ageRestriction = newValue;
+            });
+          },
+        ),
       ),
     );
   }
