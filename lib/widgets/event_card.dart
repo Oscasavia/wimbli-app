@@ -171,7 +171,7 @@ class ForYouEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasImage = event.imageUrl.isNotEmpty;
-    const cardHeight = 300.0;
+    const cardHeight = 340.0;
 
     return Container(
       width: double.infinity,
