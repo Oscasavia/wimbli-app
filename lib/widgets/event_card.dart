@@ -179,7 +179,7 @@ class ForYouEventCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.grey.shade800,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
