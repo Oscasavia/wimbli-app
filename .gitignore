@@ -53,7 +53,7 @@ app.*.map.json
 /ios/.symlinks/
 /ios/Runner/GeneratedPluginRegistrant.h
 /ios/Runner/GeneratedPluginRegistrant.m
-/ios/Runner.xcworkspace
+# /ios/Runner.xcworkspace
 /ios/Runner.xcodeproj/project.xcworkspace
 /ios/Runner.xcodeproj/xcshareddata
 /ios/Flutter/ephemeral
