@@ -171,7 +171,7 @@ class ForYouEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasImage = event.imageUrl.isNotEmpty;
-    const cardHeight = 340.0;
+    const cardHeight = 350.0;
 
     return Container(
       width: double.infinity,
@@ -179,7 +179,7 @@ class ForYouEventCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.shade800,
+        color: Colors.grey.shade800.withOpacity(0.8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
