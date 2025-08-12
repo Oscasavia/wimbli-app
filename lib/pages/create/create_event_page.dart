@@ -11,6 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:wimbli/models/event_model.dart';
 import 'package:wimbli/widgets/custom_textfield.dart';
 import 'package:wimbli/constants/app_data.dart';
+import 'package:wimbli/widgets/invite_friends_modal.dart';
+import 'package:flutter/cupertino.dart';
 
 // A simple model to represent a user for search results
 class AppUser {
@@ -28,6 +30,15 @@ class AppUser {
       profilePicture: data['profilePicture'],
     );
   }
+
+  // It's good practice to override equality checks when working with lists of objects
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AppUser && runtimeType == other.runtimeType && uid == other.uid;
+
+  @override
+  int get hashCode => uid.hashCode;
 }
 
 class CreateEventPage extends StatefulWidget {
@@ -60,12 +71,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
   String? _ageRestriction = 'All Ages';
   final List<String> _ageOptions = ['All Ages', '18+', '21+'];
 
-  final _searchController = TextEditingController();
-  Timer? _debounce;
-  List<AppUser> _searchResults = [];
-  List<AppUser> _suggestedUsers = [];
-  bool _isSearching = false;
-  bool _isLoadingSuggestions = true;
   final List<AppUser> _invitedUsers = [];
 
   final List<String> _categories = appCategories.map((c) => c.name).toList();
@@ -74,11 +79,10 @@ class _CreateEventPageState extends State<CreateEventPage> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _searchController.addListener(_onSearchChanged);
-    _fetchInitialSuggestions();
 
     if (widget.eventToEdit != null) {
       _populateFieldsForEditing();
+      _fetchInvitedUsersForEditing(widget.eventToEdit!.invitedUsers);
     }
   }
 
@@ -110,97 +114,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
     _locationController.dispose();
     _feeController.dispose();
     _durationController.dispose();
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
-  _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        if (_searchController.text.trim().isNotEmpty) {
-          _searchUsers(_searchController.text.trim());
-        } else {
-          setState(() {
-            _searchResults = [];
-          });
-        }
-      }
-    });
-  }
-
-  Future<void> _fetchInitialSuggestions() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      if (mounted) setState(() => _isLoadingSuggestions = false);
-      return;
-    }
-
-    try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where(FieldPath.documentId, isNotEqualTo: currentUser.uid)
-          .limit(3)
-          .get();
-
-      final users =
-          querySnapshot.docs.map((doc) => AppUser.fromDoc(doc)).toList();
-      if (mounted) {
-        setState(() {
-          _suggestedUsers = users;
-          _isLoadingSuggestions = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingSuggestions = false);
-      }
-    }
-  }
-
-  Future<void> _searchUsers(String query) async {
-    if (query.isEmpty) return;
-    setState(() => _isSearching = true);
-
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    final lowerCaseQuery = query.toLowerCase();
-
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('username_lowercase', isGreaterThanOrEqualTo: lowerCaseQuery)
-        .where('username_lowercase',
-            isLessThanOrEqualTo: '$lowerCaseQuery\uf8ff')
-        .limit(10)
-        .get();
-
-    final users = querySnapshot.docs
-        .where((doc) => doc.id != currentUser.uid)
-        .map((doc) => AppUser.fromDoc(doc))
-        .toList();
-
-    if (mounted) {
-      setState(() {
-        _searchResults = users;
-        _isSearching = false;
-      });
-    }
-  }
-
-  void _toggleInvite(AppUser user) {
-    setState(() {
-      if (_invitedUsers.any((invitedUser) => invitedUser.uid == user.uid)) {
-        _invitedUsers.removeWhere((invitedUser) => invitedUser.uid == user.uid);
-      } else {
-        _invitedUsers.add(user);
-      }
-    });
-  }
-
   void _nextPage() {
+    FocusScope.of(context).unfocus();
     final totalSteps = widget.isPrivate ? 10 : 9;
     if (_currentPage < totalSteps - 1) {
       _pageController.nextPage(
@@ -232,23 +150,88 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   Future<void> _selectDateTime() async {
+    // 1. Pick the date first (this is already platform-adaptive)
     final DateTime? date = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-    if (date != null && mounted) {
-      final TimeOfDay? time = await showTimePicker(
+
+    // Exit if the user cancelled the date selection
+    if (date == null || !mounted) return;
+
+    // 2. Pick the time, conditionally based on the platform
+    TimeOfDay? time;
+
+    if (Platform.isIOS) {
+      // --- Show iOS-style "wheel" picker ---
+      time = await showCupertinoModalPopup<TimeOfDay>(
+        context: context,
+        builder: (BuildContext context) {
+          DateTime tempDate = _selectedDate ?? DateTime.now();
+          return Container(
+            height: 250,
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+            child: SafeArea(
+          top: false,
+            child: Column(
+              children: [
+                // Top bar with a "Done" button
+                Container(
+                  height: 50,
+                  color: CupertinoColors.secondarySystemBackground
+                      .resolveFrom(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CupertinoButton(
+                        child: const Text('Done'),
+                        onPressed: () {
+                          // Pop the modal and return the selected time
+                          Navigator.of(context)
+                              .pop(TimeOfDay.fromDateTime(tempDate));
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // The actual time picker wheel
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.time,
+                    use24hFormat: false,
+                    initialDateTime: _selectedDate ?? DateTime.now(),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempDate = newDate; // Update the temp time when user scrolls
+                    },
+                  ),
+                ),
+              ],
+            ),
+            ),
+          );
+        },
+      );
+    } else {
+      // --- Show Android-style "clock" picker ---
+      time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_selectedDate ?? DateTime.now()),
       );
-      if (time != null) {
-        setState(() {
-          _selectedDate =
-              DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        });
-      }
+    }
+
+    // 3. If a time was selected on either platform, update the state
+    if (time != null) {
+      setState(() {
+        _selectedDate = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time!.hour,
+          time.minute,
+        );
+      });
     }
   }
 
@@ -367,12 +350,65 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 
+  Future<void> _fetchInvitedUsersForEditing(List<String> userIds) async {
+    if (userIds.isEmpty) return;
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+
+      final users = querySnapshot.docs.map((doc) => AppUser.fromDoc(doc)).toList();
+
+      if (mounted) {
+        setState(() {
+          _invitedUsers.addAll(users);
+        });
+      }
+    } catch (e) {
+      print("Error fetching invited users for editing: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load invited users.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openInviteFriendsModal() async {
+    final List<AppUser>? result = await showModalBottomSheet<List<AppUser>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        maxChildSize: 0.85,
+        minChildSize: 0.5,
+        builder: (_, scrollController) {
+          return InviteFriendsModal(
+            initiallyInvitedUsers: _invitedUsers,
+            scrollController: scrollController,
+          );
+        },
+      ),
+    );
+
+    // Update the state with the returned list of users
+    if (result != null && mounted) {
+      setState(() {
+        _invitedUsers.clear();
+        _invitedUsers.addAll(result);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.eventToEdit != null;
     final totalSteps = widget.isPrivate ? 10 : 9;
     final List<Widget> pages = [
-      _buildImageStep(),
+      _buildImageStep(totalSteps),
       _buildStep(
           "What's the title of your event?",
           "e.g., Sunset Yoga Session",
@@ -381,7 +417,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             hintText: "Event Title",
             icon: Icons.title,
             keyboardType: TextInputType.text,
-          )),
+          ), totalSteps),
       _buildStep(
           "Describe your event",
           "Tell everyone what it's about.",
@@ -392,7 +428,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             keyboardType: TextInputType.multiline, // Enables the 'Enter' key
             maxLines: 5,
             minLines: 1,
-          )),
+          ), totalSteps),
       _buildStep(
           "Where is it happening?",
           "Add a location.",
@@ -401,11 +437,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
             hintText: "Location",
             icon: Icons.location_on_outlined,
             keyboardType: TextInputType.text,
-          )),
+          ), totalSteps),
       _buildStep("Choose a category", "This helps others find your event.",
-          _buildCategorySelector()),
+          _buildCategorySelector(), totalSteps),
       _buildStep("Is there an age restriction?",
-          "Select the appropriate age group.", _buildAgeRestrictionSelector()),
+          "Select the appropriate age group.", _buildAgeRestrictionSelector(), totalSteps),
       _buildStep(
           "Is there an entry fee?",
           "(Optional)",
@@ -417,14 +453,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
             ],
-          )),
+          ), totalSteps),
       _buildStep("When is the event?", "Select date and time.",
-          _buildDateTimeSelector()),
+          _buildDateTimeSelector(), totalSteps),
       _buildStep(
-          "What's the duration?", "e.g., 2 hours", _buildDurationInput()),
+          "What's the duration?", "e.g., 2 hours", _buildDurationInput(), totalSteps),
       if (widget.isPrivate)
         _buildStep("Invite your friends", "Select who can see this event.",
-            _buildInviteFriendsStep()),
+            _buildInviteFriendsStep(), totalSteps),
     ];
 
     return Scaffold(
@@ -488,7 +524,38 @@ class _CreateEventPageState extends State<CreateEventPage> {
             style: const TextStyle(
                 color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(width: 48),
+          IconButton(
+  icon: const Icon(Icons.close, color: Colors.white),
+  onPressed: () {
+    // Show a confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.grey.shade800,
+          title: const Text('Discard Event?', style: TextStyle(color: Colors.white)),
+          content: const Text('If you go back, your progress will be lost.', style: TextStyle(color: Colors.white70)),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Discard', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+                Navigator.of(context).pop();      // Close the CreateEventPage
+                FocusScope.of(context).unfocus();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  },
+)
         ],
       ),
     );
@@ -544,8 +611,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 
-  Widget _buildStep(String title, String subtitle, Widget content) {
-    final isLastStep = _currentPage == (widget.isPrivate ? 8 : 7);
+  Widget _buildStep(String title, String subtitle, Widget content, int totalSteps) {
+    final isLastStep = _currentPage == totalSteps - 1;
     final isEditing = widget.eventToEdit != null;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -591,7 +658,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 
-  Widget _buildImageStep() {
+  Widget _buildImageStep(int totalSteps) {
     ImageProvider? imageProvider;
     if (_eventImageFile != null) {
       imageProvider = FileImage(_eventImageFile!);
@@ -629,6 +696,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
               : null,
         ),
       ),
+      totalSteps,
     );
   }
 
@@ -758,104 +826,40 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
   Widget _buildInvitedUsersList() {
     if (_invitedUsers.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Invited",
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16)),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 40,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _invitedUsers.length,
-            itemBuilder: (context, index) {
-              final user = _invitedUsers[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Chip(
-                  avatar: CircleAvatar(
-                    backgroundImage: user.profilePicture != null
-                        ? NetworkImage(user.profilePicture!)
-                        : null,
-                    backgroundColor: Colors.white.withOpacity(0.7),
-                    child: user.profilePicture == null
-                        ? Icon(Icons.person,
-                            size: 18, color: Colors.purple.shade700)
-                        : null,
-                  ),
-                  label: Text(user.username),
-                  onDeleted: () => _toggleInvite(user),
-                  deleteIconColor: Colors.white70,
-                  backgroundColor: Colors.white.withOpacity(0.3),
-                  labelStyle: const TextStyle(color: Colors.white),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _buildResultsOrSuggestionsList() {
-    bool showSuggestions = _searchController.text.isEmpty;
-    bool isLoading = showSuggestions ? _isLoadingSuggestions : _isSearching;
-    List<AppUser> listToShow =
-        showSuggestions ? _suggestedUsers : _searchResults;
-
-    if (isLoading) {
-      return const Center(
-          child: CircularProgressIndicator(color: Colors.white));
-    }
-
-    if (listToShow.isEmpty) {
       return Center(
         child: Text(
-          showSuggestions
-              ? "No suggestions found."
-              : "No users found for '${_searchController.text}'.",
-          style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          "No one invited yet. Tap below to add friends!",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
         ),
       );
     }
 
-    return ListView.builder(
-      itemCount: listToShow.length,
-      itemBuilder: (context, index) {
-        final user = listToShow[index];
-        final isInvited =
-            _invitedUsers.any((invitedUser) => invitedUser.uid == user.uid);
-
-        return ListTile(
-          leading: CircleAvatar(
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 8.0,
+      children: _invitedUsers.map((user) {
+        return Chip(
+          avatar: CircleAvatar(
             backgroundImage: user.profilePicture != null
                 ? NetworkImage(user.profilePicture!)
                 : null,
             backgroundColor: Colors.white.withOpacity(0.7),
             child: user.profilePicture == null
-                ? Icon(Icons.person, color: Colors.purple.shade700)
+                ? Icon(Icons.person, size: 18, color: Colors.purple.shade700)
                 : null,
           ),
-          title:
-              Text(user.username, style: const TextStyle(color: Colors.white)),
-          trailing: Checkbox(
-            value: isInvited,
-            onChanged: (bool? value) {
-              _toggleInvite(user);
-            },
-            activeColor: Colors.white,
-            checkColor: Colors.purple.shade400,
-            side: const BorderSide(color: Colors.white70),
-          ),
+          label: Text(user.username),
+          backgroundColor: Colors.white.withOpacity(0.3),
+          labelStyle: const TextStyle(color: Colors.white),
+          deleteIconColor: Colors.white70,
+          onDeleted: () {
+            setState(() {
+              _invitedUsers.remove(user);
+            });
+          },
         );
-      },
+      }).toList(),
     );
   }
 
@@ -864,27 +868,39 @@ class _CreateEventPageState extends State<CreateEventPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomTextField(
-            controller: _searchController,
-            hintText: "Search by username...",
-            icon: Icons.search,
-          ),
-          const SizedBox(height: 16),
-          _buildInvitedUsersList(),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              _searchController.text.isEmpty ? "Suggestions" : "Search Results",
-              style: const TextStyle(
+          const Text("Invited",
+              style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16),
+                  fontSize: 16)),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: _buildInvitedUsersList(),
+          ),
+          const Spacer(),
+          Center(
+            child: OutlinedButton.icon(
+              onPressed: _openInviteFriendsModal,
+              icon: const Icon(Icons.person_add_alt_1_outlined),
+              label: const Text("Add / Edit Invites"),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                side: const BorderSide(color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
             ),
           ),
-          const Divider(color: Colors.white54),
-          Expanded(
-            child: _buildResultsOrSuggestionsList(),
-          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
