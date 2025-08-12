@@ -201,7 +201,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   }
 
   void _nextPage() {
-    final totalSteps = widget.isPrivate ? 9 : 8;
+    final totalSteps = widget.isPrivate ? 10 : 9;
     if (_currentPage < totalSteps - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -370,7 +370,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.eventToEdit != null;
-    final totalSteps = widget.isPrivate ? 9 : 8;
+    final totalSteps = widget.isPrivate ? 10 : 9;
     final List<Widget> pages = [
       _buildImageStep(),
       _buildStep(

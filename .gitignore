@@ -89,4 +89,4 @@ app.*.map.json
 /macos/Flutter/ephemeral
 
 # Firebase (do not commit)
-lib/firebase_options.dart
+lib/firebase_options.dartflutter/
