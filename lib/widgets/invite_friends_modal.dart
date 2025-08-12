@@ -208,7 +208,7 @@ class _InviteFriendsModalState extends State<InviteFriendsModal> {
 
     return ListView.builder(
       controller: widget.scrollController,
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(top: 8, bottom: 50),
       itemCount: listToShow.length,
       itemBuilder: (context, index) {
         final user = listToShow[index];
@@ -219,9 +219,9 @@ class _InviteFriendsModalState extends State<InviteFriendsModal> {
             backgroundImage: user.profilePicture != null
                 ? NetworkImage(user.profilePicture!)
                 : null,
-            backgroundColor: Colors.white.withOpacity(0.7),
+            backgroundColor: Colors.white24,
             child: user.profilePicture == null
-                ? Icon(Icons.person, color: Colors.purple.shade700)
+                ? Icon(Icons.person, color: Colors.white.withOpacity(0.7))
                 : null,
           ),
           title: Text(user.username,
